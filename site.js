@@ -112,6 +112,48 @@
     zap(item ? 'Olá, Universo Digital! Vocês têm ' + item + ' disponível? Qual é o preço?' : 'Olá, Universo Digital! Estou procurando um produto. Pode me ajudar?');
   });
 
+  // lista de produtos consultados: o carrinho do topo manda todos juntos pelo WhatsApp
+  var minhaLista = [];
+  try { minhaLista = JSON.parse(sessionStorage.getItem('ud-lista') || '[]'); } catch (x) { /* sem armazenamento */ }
+  function contarLista() { var n = document.getElementById('lista-n'); if (n) n.textContent = minhaLista.length; }
+  contarLista();
+  document.addEventListener('click', function (e) {
+    var p = e.target.closest('[data-pedido]');
+    if (p && p.dataset.pedido && minhaLista.indexOf(p.dataset.pedido) < 0) {
+      minhaLista.push(p.dataset.pedido);
+      try { sessionStorage.setItem('ud-lista', JSON.stringify(minhaLista)); } catch (x) { /* sem armazenamento */ }
+      contarLista();
+    }
+    if (e.target.closest('[data-lista]')) {
+      if (!minhaLista.length) painel('Sua lista está vazia', 'Toque em Consultar no WhatsApp em um produto e ele aparece aqui.');
+      else zap('Olá, Universo Digital! Tenho interesse em: ' + minhaLista.join(', ') + '. Vocês têm disponível? Qual é o valor?');
+    }
+    if (e.target.closest('[data-conta]')) painel('Minha conta', 'A área do cliente entra quando a loja começar a vender pelo site. Por enquanto, as consultas são pelo WhatsApp.');
+    var aba = e.target.closest('[data-aba]');
+    if (aba) {
+      [].forEach.call(document.querySelectorAll('[data-aba]'), function (b) { b.setAttribute('aria-pressed', b === aba); });
+      [].forEach.call(document.querySelectorAll('[data-lista-aba]'), function (l) { l.hidden = l.dataset.listaAba !== aba.dataset.aba; });
+    }
+  });
+
+  var vitrine = document.querySelector('.vitrine');
+  if (vitrine) (function () {
+    var sl = vitrine.querySelectorAll('.vit-slide'), pt = vitrine.querySelectorAll('.vit-pontos button'), at = 0, tempo;
+    function ir(n) {
+      at = (n + sl.length) % sl.length;
+      [].forEach.call(sl, function (x, i) { x.classList.toggle('on', i === at); });
+      [].forEach.call(pt, function (x, i) { x.classList.toggle('on', i === at); });
+    }
+    function girar() { clearInterval(tempo); if (!calmo) tempo = setInterval(function () { ir(at + 1); }, 6000); }
+    vitrine.querySelector('.vit-ant').addEventListener('click', function () { ir(at - 1); girar(); });
+    vitrine.querySelector('.vit-prox').addEventListener('click', function () { ir(at + 1); girar(); });
+    [].forEach.call(pt, function (x, i) { x.addEventListener('click', function () { ir(i); girar(); }); });
+    vitrine.addEventListener('mouseenter', function () { clearInterval(tempo); });
+    vitrine.addEventListener('mouseleave', girar);
+    vitrine.addEventListener('focusin', function () { clearInterval(tempo); });
+    girar();
+  })();
+
   var lista = document.getElementById('produtos');
   if (lista) (function () {
     var itens = [].slice.call(lista.children), botoes = [].slice.call(document.querySelectorAll('[data-cat][aria-pressed]'));
