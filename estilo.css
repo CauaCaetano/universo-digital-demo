@@ -288,3 +288,20 @@ a { color: inherit; }
   .prod h2 { font-size: .98rem; }
   .prod p { font-size: .88rem; }
 }
+
+/* ---------- fachada ao lado do mapa ---------- */
+.onde { display: block; padding: clamp(44px, 6vw, 80px) clamp(16px, 4vw, 56px); }
+.onde-txt { padding: 0; max-width: 1208px; margin: 0 auto 28px; }
+.onde-duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; max-width: 1208px; margin: auto; }
+.onde-duo .mapa { height: clamp(300px, 34vw, 440px); min-height: 0; border-radius: 12px; background: var(--noite); }
+.onde-duo figcaption { margin-top: 8px; font-weight: 700; }
+.foto-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) {
+  .onde-duo { grid-template-columns: minmax(0, 1fr); }
+  .onde-duo .mapa { height: 320px; }
+  .foto-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.fachada { display: block; width: 100%; height: clamp(300px, 34vw, 440px); object-fit: cover; border-radius: 12px; background: var(--noite); }
+.onde-duo figcaption small { font-weight: 400; opacity: .85; }
+@media (max-width: 760px) { .fachada { height: auto; aspect-ratio: 1040 / 815; } }
