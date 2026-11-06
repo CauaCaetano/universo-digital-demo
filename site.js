@@ -106,6 +106,7 @@
     });
     busca.addEventListener('input', aplicar);
     addEventListener('hashchange', doEndereco);
+    busca.value = new URLSearchParams(location.search).get('q') || '';
     doEndereco();
   })();
 })();
