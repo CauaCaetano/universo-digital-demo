@@ -1,14 +1,38 @@
 // Menu, entrada suave, vitrine do banner, foto dos serviços, formulário de orçamento e catálogo.
 (function () {
   'use strict';
-  var WHATS = '5516991267003'; // número público; confirmar com a loja
+  var WHATS = '0'; // número público; confirmar com a loja
   var PROBLEMAS = {
     notebook: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Perdi ou queimei a fonte', 'Dobradiça quebrada', 'Quero SSD ou mais memória'],
     computador: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Quero SSD, memória ou placa de vídeo'],
     impressora: ['Não imprime', 'Imprime com falhas', 'Precisa de limpeza', 'Preciso de suprimentos'],
   };
   var calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var zap = function (msg) { window.open('https://wa.me/' + WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener'); };
+  var DEMO = document.documentElement.dataset.demo === '1';
+  function painel(titulo, texto, msg) {
+    var d = document.querySelector('dialog.sim');
+    if (!d) {
+      d = document.createElement('dialog');
+      d.className = 'sim';
+      d.innerHTML = '<div class="sim-chat"><p></p></div><div class="sim-txt"><h2></h2><p></p><button class="bt bt-laranja" type="button">Fechar</button></div>';
+      document.body.appendChild(d);
+      d.querySelector('button').addEventListener('click', function () { d.close(); });
+    }
+    d.querySelector('.sim-chat').hidden = !msg;
+    d.querySelector('.sim-chat p').textContent = msg || '';
+    d.querySelector('.sim-txt h2').textContent = titulo;
+    d.querySelector('.sim-txt p').textContent = texto;
+    d.showModal();
+  }
+  var zap = function (msg) {
+    if (DEMO) { painel('É assim que o pedido chega na loja', 'Demonstração: nenhuma mensagem foi enviada. No site final, o cliente cai direto no WhatsApp da loja com este texto.', msg); return; }
+    window.open('https://wa.me/' + WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  };
+  document.addEventListener('click', function (e) {
+    var s = e.target.closest('[data-sim]'), f = e.target.closest('[data-falta]');
+    if (s) { e.preventDefault(); zap('Olá, Universo Digital! Gostaria de mais informações.'); }
+    if (f) { e.preventDefault(); painel(f.dataset.falta + ' da loja', 'Este botão recebe o endereço verdadeiro quando a loja informar.'); }
+  });
   document.documentElement.classList.add('js');
   if (calmo) [].forEach.call(document.querySelectorAll('video'), function (v) { v.removeAttribute('autoplay'); v.pause(); });
 

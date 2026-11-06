@@ -320,3 +320,19 @@ a { color: inherit; }
 .prod .preco-consulta { margin: 0 0 8px; color: var(--azul); font-size: .95rem; font-weight: 600; }
 .chamada-txt { min-width: 0; }
 .contatos li + li { border-top: 1px solid rgba(255, 255, 255, .22); }
+
+.redes { display: flex; gap: 6px; margin-top: 12px; }
+.redes a { display: grid; place-items: center; width: 40px; height: 40px; border: 1.5px solid currentColor; color: inherit; transition: background-color .18s, color .18s, border-color .18s; }
+.redes a:hover { border-color: var(--laranja); background: var(--laranja); color: var(--noite); }
+.redes svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+.redes .ponto { fill: currentColor; stroke: none; }
+.topo-redes { margin-top: 0; }
+.sim { width: min(440px, calc(100vw - 24px)); padding: 0; border: 0; color: var(--tinta); }
+.sim::backdrop { background: rgba(7, 14, 34, .76); }
+.sim-chat { padding: 16px; background: var(--papel); }
+.sim-chat[hidden] { display: none; }
+.sim-chat p { padding: 10px 12px; border-left: 4px solid var(--laranja); background: #fff; line-height: 1.45; }
+.sim-txt { padding: 18px; }
+.sim-txt h2 { font-size: 1.8rem; }
+.sim-txt p { margin: 8px 0 14px; color: var(--cinza); font-size: .97rem; }
+@media (max-width: 1100px) { .topo-redes { display: none; } }
