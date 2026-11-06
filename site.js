@@ -1,33 +1,32 @@
-// Menu, formulário de orçamento e filtro da loja.
-// Na demonstração (<html data-demo="1">) nada é enviado: um painel mostra como o pedido chegaria.
+// Menu, entrada suave, vitrine do banner, foto dos serviços, formulário de orçamento e catálogo.
 (function () {
   'use strict';
   var WHATS = '5516991267003'; // número público; confirmar com a loja
-  var DEMO = document.documentElement.dataset.demo === '1';
   var PROBLEMAS = {
-    notebook: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Perdi ou queimei a fonte', 'Quero SSD ou mais memória'],
+    notebook: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Perdi ou queimei a fonte', 'Dobradiça quebrada', 'Quero SSD ou mais memória'],
     computador: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Quero SSD, memória ou placa de vídeo'],
     impressora: ['Não imprime', 'Imprime com falhas', 'Precisa de limpeza', 'Preciso de suprimentos'],
   };
+  var calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var zap = function (msg) { window.open('https://wa.me/' + WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener'); };
+  document.documentElement.classList.add('js');
+  if (calmo) [].forEach.call(document.querySelectorAll('video'), function (v) { v.removeAttribute('autoplay'); v.pause(); });
 
-  function enviar(msg) {
-    if (!DEMO) { window.open('https://wa.me/' + WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener'); return; }
-    var d = document.querySelector('dialog.sim');
-    if (!d) {
-      d = document.createElement('dialog');
-      d.className = 'sim';
-      d.innerHTML = '<div class="sim-topo">Universo Digital</div><div class="sim-chat"><p></p></div><div class="sim-txt"><h2>É assim que o pedido chega na loja</h2><p>Esta é uma demonstração: nenhuma mensagem foi enviada. No site de verdade, o cliente cai direto no WhatsApp com o texto pronto.</p><button class="bt bt-azul" type="button">Fechar</button></div>';
-      document.body.appendChild(d);
-      d.querySelector('button').addEventListener('click', function () { d.close(); });
-    }
-    d.querySelector('.sim-chat p').textContent = msg;
-    d.showModal();
+  var rv = [].slice.call(document.querySelectorAll('.rv'));
+  if ('IntersectionObserver' in window && !calmo) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('visto'); io.unobserve(x.target); } });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    rv.forEach(function (el) { io.observe(el); });
+  } else rv.forEach(function (el) { el.classList.add('visto'); });
+
+  var vit = [].slice.call(document.querySelectorAll('.banner-vit img'));
+  if (vit.length) {
+    var at = 0;
+    vit[0].classList.add('on');
+    if (!calmo) setInterval(function () { vit[at].classList.remove('on'); at = (at + 1) % vit.length; vit[at].classList.add('on'); }, 3800);
   }
 
-  // quem pediu menos movimento no aparelho vê o vídeo parado
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) [].forEach.call(document.querySelectorAll('video'), function (v) { v.removeAttribute('autoplay'); v.pause(); });
-
-  // menu no celular
   var bt = document.querySelector('.menu-bt'), menu = document.getElementById('menu');
   bt.addEventListener('click', function () {
     var aberto = menu.classList.toggle('aberto');
@@ -35,10 +34,17 @@
     bt.textContent = aberto ? 'Fechar' : 'Menu';
   });
 
-  // formulário de orçamento
-  var form = document.getElementById('diagnostico');
+  var fotoSv = document.getElementById('sv-img');
+  if (fotoSv) [].forEach.call(document.querySelectorAll('.sv-linha'), function (l, i, todas) {
+    var mostra = function () { [].forEach.call(todas, function (o) { o.classList.toggle('ativo', o === l); }); fotoSv.src = l.dataset.foto; };
+    l.addEventListener('mouseenter', mostra);
+    l.addEventListener('focusin', mostra);
+    if (i === 0) l.classList.add('ativo');
+  });
+
+  var form = document.getElementById('orcamento');
   if (form) (function () {
-    var caixa = document.getElementById('problemas'), saida = document.getElementById('mensagem'), visita = document.getElementById('onde-visita');
+    var caixa = document.getElementById('problemas'), saida = document.getElementById('mensagem'), visita = document.getElementById('onde-visita'), erro = document.getElementById('erro');
     var valor = function (n) { var m = form.querySelector('input[name="' + n + '"]:checked'); return m ? m.value : ''; };
     function problemas(marcado) {
       var ap = valor('aparelho');
@@ -54,28 +60,34 @@
       if (ap === 'impressora') form.querySelector('input[name="onde"][value="loja"]').checked = true;
     }
     function texto() {
-      var ap = valor('aparelho'), onde = valor('onde') === 'visita' ? 'Gostaria de uma visita técnica.' : 'Posso levar até a loja.';
-      return 'Olá, Universo Digital! Preciso de ajuda com ' + (ap === 'impressora' ? 'minha ' : 'meu ') + ap + ': ' + valor('problema') + '. ' + onde + ' Pode me passar um orçamento?';
+      var ap = valor('aparelho'), nome = form.nome.value.trim(), tel = form.tel.value.trim(), obs = form.obs.value.trim();
+      var onde = valor('onde') === 'visita' ? 'Gostaria de uma visita técnica.' : 'Posso levar até a loja.';
+      return 'Olá, Universo Digital!' + (nome ? ' Sou ' + nome + '.' : '') + ' Preciso de ajuda com ' + (ap === 'impressora' ? 'minha ' : 'meu ') + ap + ': ' + valor('problema') + '. ' + onde + (obs ? ' ' + obs : '') + (tel ? ' Meu WhatsApp: ' + tel + '.' : '') + ' Pode me passar um orçamento?';
     }
-    form.addEventListener('change', function (e) {
-      if (e.target.name === 'aparelho') problemas(0);
-      saida.textContent = texto();
+    form.addEventListener('change', function (e) { if (e.target.name === 'aparelho') problemas(0); saida.textContent = texto(); });
+    form.addEventListener('input', function () { saida.textContent = texto(); });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var n = form.nome.value.trim().length < 2, t = form.tel.value.replace(/\D/g, '').length < 10;
+      form.nome.setAttribute('aria-invalid', n);
+      form.tel.setAttribute('aria-invalid', t);
+      erro.textContent = n ? 'Escreva o seu nome.' : t ? 'Confira o WhatsApp, com DDD.' : '';
+      if (n) { form.nome.focus(); return; }
+      if (t) { form.tel.focus(); return; }
+      zap(texto());
     });
-    form.addEventListener('submit', function (e) { e.preventDefault(); enviar(texto()); });
     problemas(Number(form.dataset.prob) || 0);
     saida.textContent = texto();
   })();
 
-  // botão "Perguntar se tem" em qualquer página de produtos
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-pedido]');
     if (!b) return;
     var campo = document.getElementById('busca');
     var item = b.dataset.pedido || (campo ? campo.value.trim() : '');
-    enviar(item ? 'Olá, Universo Digital! Vocês têm ' + item + ' disponível? Qual é o preço?' : 'Olá, Universo Digital! Estou procurando um produto. Pode me ajudar?');
+    zap(item ? 'Olá, Universo Digital! Vocês têm ' + item + ' disponível? Qual é o preço?' : 'Olá, Universo Digital! Estou procurando um produto. Pode me ajudar?');
   });
 
-  // página Produtos: categoria (também pelo endereço, ex.: loja.html#setup) e busca
   var lista = document.getElementById('produtos');
   if (lista) (function () {
     var itens = [].slice.call(lista.children), botoes = [].slice.call(document.querySelectorAll('[data-cat][aria-pressed]'));
@@ -92,21 +104,12 @@
       contagem.textContent = n + (n === 1 ? ' produto' : ' produtos');
       vazio.hidden = n > 0;
     }
-    function doEndereco() {
-      var h = location.hash.slice(1);
-      cat = botoes.some(function (b) { return b.dataset.cat === h; }) ? h : 'todos';
-      aplicar();
-    }
-    botoes.forEach(function (b) {
-      b.addEventListener('click', function () {
-        cat = b.dataset.cat;
-        history.replaceState(null, '', cat === 'todos' ? location.pathname : '#' + cat);
-        aplicar();
-      });
-    });
+    botoes.forEach(function (b) { b.addEventListener('click', function () { cat = b.dataset.cat; aplicar(); }); });
     busca.addEventListener('input', aplicar);
-    addEventListener('hashchange', doEndereco);
-    busca.value = new URLSearchParams(location.search).get('q') || '';
-    doEndereco();
+    var q = new URLSearchParams(location.search).get('q') || '';
+    busca.value = q;
+    var campoTopo = document.getElementById('q');
+    if (campoTopo) campoTopo.value = q;
+    aplicar();
   })();
 })();
