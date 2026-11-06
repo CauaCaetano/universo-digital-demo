@@ -1,4 +1,4 @@
-// Diagnóstico: a escolha do cliente vira a mensagem para o WhatsApp da loja.
+// Menu, formulário de orçamento e filtro da loja.
 // Na demonstração (<html data-demo="1">) nada é enviado: um painel mostra como o pedido chegaria.
 (function () {
   'use strict';
@@ -9,40 +9,9 @@
     computador: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Quero SSD, memória ou placa de vídeo'],
     impressora: ['Não imprime', 'Imprime com falhas', 'Precisa de limpeza', 'Preciso de suprimentos'],
   };
-  var form = document.getElementById('diagnostico');
-  var caixa = document.getElementById('problemas');
-  var saida = document.getElementById('mensagem');
-  var visita = document.getElementById('onde-visita');
 
-  function valor(nome) { var m = form.querySelector('input[name="' + nome + '"]:checked'); return m ? m.value : ''; }
-
-  function montarProblemas() {
-    var ap = valor('aparelho');
-    caixa.textContent = '';
-    PROBLEMAS[ap].forEach(function (p, i) {
-      var l = document.createElement('label'), r = document.createElement('input'), s = document.createElement('span');
-      r.type = 'radio'; r.name = 'problema'; r.value = p; r.checked = i === 0;
-      s.textContent = p;
-      l.appendChild(r); l.appendChild(s); caixa.appendChild(l);
-    });
-    // a visita técnica anunciada pela loja é para notebook e computador
-    visita.hidden = ap === 'impressora';
-    if (ap === 'impressora') form.querySelector('input[name="onde"][value="loja"]').checked = true;
-  }
-
-  function texto() {
-    var onde = valor('onde') === 'visita' ? 'Gostaria de uma visita técnica.' : 'Posso levar até a loja.';
-    var ap = valor('aparelho');
-    return 'Olá, Universo Digital! Preciso de ajuda com ' + (ap === 'impressora' ? 'minha ' : 'meu ') + ap + ': ' + valor('problema') + '. ' + onde + ' Pode me passar um orçamento?';
-  }
-  function atualizar() { saida.textContent = texto(); }
-
-  form.addEventListener('change', function (e) {
-    if (e.target.name === 'aparelho') montarProblemas();
-    atualizar();
-  });
-
-  function simular(msg) {
+  function enviar(msg) {
+    if (!DEMO) { window.open(CONTATO, '_blank', 'noopener'); return; }
     var d = document.querySelector('dialog.sim');
     if (!d) {
       d = document.createElement('dialog');
@@ -55,11 +24,85 @@
     d.showModal();
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (DEMO) simular(texto()); else window.open(CONTATO, '_blank', 'noopener');
+  // menu no celular
+  var bt = document.querySelector('.menu-bt'), menu = document.getElementById('menu');
+  bt.addEventListener('click', function () {
+    var aberto = menu.classList.toggle('aberto');
+    bt.setAttribute('aria-expanded', aberto);
+    bt.textContent = aberto ? 'Fechar' : 'Menu';
   });
 
-  montarProblemas();
-  atualizar();
+  // formulário de orçamento
+  var form = document.getElementById('diagnostico');
+  if (form) (function () {
+    var caixa = document.getElementById('problemas'), saida = document.getElementById('mensagem'), visita = document.getElementById('onde-visita');
+    var valor = function (n) { var m = form.querySelector('input[name="' + n + '"]:checked'); return m ? m.value : ''; };
+    function problemas(marcado) {
+      var ap = valor('aparelho');
+      caixa.textContent = '';
+      PROBLEMAS[ap].forEach(function (p, i) {
+        var l = document.createElement('label'), r = document.createElement('input'), s = document.createElement('span');
+        r.type = 'radio'; r.name = 'problema'; r.value = p; r.checked = i === marcado;
+        s.textContent = p;
+        l.appendChild(r); l.appendChild(s); caixa.appendChild(l);
+      });
+      // a visita técnica anunciada pela loja é para notebook e computador
+      visita.hidden = ap === 'impressora';
+      if (ap === 'impressora') form.querySelector('input[name="onde"][value="loja"]').checked = true;
+    }
+    function texto() {
+      var ap = valor('aparelho'), onde = valor('onde') === 'visita' ? 'Gostaria de uma visita técnica.' : 'Posso levar até a loja.';
+      return 'Olá, Universo Digital! Preciso de ajuda com ' + (ap === 'impressora' ? 'minha ' : 'meu ') + ap + ': ' + valor('problema') + '. ' + onde + ' Pode me passar um orçamento?';
+    }
+    form.addEventListener('change', function (e) {
+      if (e.target.name === 'aparelho') problemas(0);
+      saida.textContent = texto();
+    });
+    form.addEventListener('submit', function (e) { e.preventDefault(); enviar(texto()); });
+    problemas(Number(form.dataset.prob) || 0);
+    saida.textContent = texto();
+  })();
+
+  // botão "Perguntar se tem" em qualquer página de produtos
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-pedido]');
+    if (!b) return;
+    var campo = document.getElementById('busca');
+    var item = b.dataset.pedido || (campo ? campo.value.trim() : '');
+    enviar(item ? 'Olá, Universo Digital! Vocês têm ' + item + ' disponível? Qual é o preço?' : 'Olá, Universo Digital! Estou procurando um produto. Pode me ajudar?');
+  });
+
+  // página Produtos: categoria (também pelo endereço, ex.: loja.html#setup) e busca
+  var lista = document.getElementById('produtos');
+  if (lista) (function () {
+    var itens = [].slice.call(lista.children), botoes = [].slice.call(document.querySelectorAll('[data-cat][aria-pressed]'));
+    var busca = document.getElementById('busca'), contagem = document.getElementById('contagem'), vazio = document.getElementById('vazio');
+    var limpa = function (s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); };
+    var cat = 'todos';
+    function aplicar() {
+      var q = limpa(busca.value.trim()), n = 0;
+      itens.forEach(function (li) {
+        var ok = (cat === 'todos' || li.dataset.cat === cat) && (!q || limpa(li.textContent).indexOf(q) >= 0);
+        li.hidden = !ok; if (ok) n++;
+      });
+      botoes.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.cat === cat); });
+      contagem.textContent = n + (n === 1 ? ' produto' : ' produtos');
+      vazio.hidden = n > 0;
+    }
+    function doEndereco() {
+      var h = location.hash.slice(1);
+      cat = botoes.some(function (b) { return b.dataset.cat === h; }) ? h : 'todos';
+      aplicar();
+    }
+    botoes.forEach(function (b) {
+      b.addEventListener('click', function () {
+        cat = b.dataset.cat;
+        history.replaceState(null, '', cat === 'todos' ? location.pathname : '#' + cat);
+        aplicar();
+      });
+    });
+    busca.addEventListener('input', aplicar);
+    addEventListener('hashchange', doEndereco);
+    doEndereco();
+  })();
 })();
