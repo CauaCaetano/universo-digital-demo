@@ -136,6 +136,13 @@
     }
   });
 
+  // no celular o texto inteiro não cabe no campo de busca
+  var campoBusca = document.getElementById('q');
+  if (campoBusca && matchMedia('(max-width: 820px)').matches) campoBusca.placeholder = 'O que você procura?';
+  // no início, o formulário longo fica recolhido no celular
+  var orcDet = document.querySelector('.orc-det');
+  if (orcDet && matchMedia('(max-width: 820px)').matches) orcDet.open = false;
+
   var vitrine = document.querySelector('.vitrine');
   if (vitrine) (function () {
     var sl = vitrine.querySelectorAll('.vit-slide'), pt = vitrine.querySelectorAll('.vit-pontos button'), at = 0, tempo;
