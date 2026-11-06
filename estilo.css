@@ -305,3 +305,9 @@ a { color: inherit; }
 .fachada { display: block; width: 100%; height: clamp(300px, 34vw, 440px); object-fit: cover; border-radius: 12px; background: var(--noite); }
 .onde-duo figcaption small { font-weight: 400; opacity: .85; }
 @media (max-width: 760px) { .fachada { height: auto; aspect-ratio: 1040 / 815; } }
+
+/* ---------- vídeo da loja como foto em movimento ---------- */
+.tour { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); padding-inline: clamp(16px, 4vw, 56px); }
+.tour-txt { order: -1; justify-self: end; width: min(100%, 520px); }
+.tour .vid { aspect-ratio: 720 / 680; object-fit: cover; max-width: 640px; }
+@media (max-width: 640px) { .tour .vid { max-width: none; } .tour-txt { justify-self: start; } }

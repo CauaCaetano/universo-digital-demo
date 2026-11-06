@@ -24,6 +24,9 @@
     d.showModal();
   }
 
+  // quem pediu menos movimento no aparelho vê o vídeo parado
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) [].forEach.call(document.querySelectorAll('video'), function (v) { v.removeAttribute('autoplay'); v.pause(); });
+
   // menu no celular
   var bt = document.querySelector('.menu-bt'), menu = document.getElementById('menu');
   bt.addEventListener('click', function () {
