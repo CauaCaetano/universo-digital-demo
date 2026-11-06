@@ -2,7 +2,7 @@
 // Na demonstração (<html data-demo="1">) nada é enviado: um painel mostra como o pedido chegaria.
 (function () {
   'use strict';
-  var CONTATO = 'https://contate.me/universo_digital'; // link público do perfil; trocar por wa.me com o número que a loja confirmar
+  var WHATS = '5516991267003'; // número público; confirmar com a loja
   var DEMO = document.documentElement.dataset.demo === '1';
   var PROBLEMAS = {
     notebook: ['Lento ou travando', 'Não liga', 'Com vírus ou precisa formatar', 'Esquentando muito', 'Perdi ou queimei a fonte', 'Quero SSD ou mais memória'],
@@ -11,7 +11,7 @@
   };
 
   function enviar(msg) {
-    if (!DEMO) { window.open(CONTATO, '_blank', 'noopener'); return; }
+    if (!DEMO) { window.open('https://wa.me/' + WHATS + '?text=' + encodeURIComponent(msg), '_blank', 'noopener'); return; }
     var d = document.querySelector('dialog.sim');
     if (!d) {
       d = document.createElement('dialog');
